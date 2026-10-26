@@ -3,6 +3,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "../../../db";
 import { checkins, sessions } from "../../../db/schema";
 
+export const dynamic = "force-dynamic";
+
+export async function GET(request: NextRequest) {
+  const sessionId = request.nextUrl.searchParams.get("session")?.trim();
+  if (!sessionId) return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
+
+  const session = await getDb()
+    .select({ id: sessions.id, course: sessions.course, classDate: sessions.classDate })
+    .from(sessions)
+    .where(eq(sessions.id, sessionId))
+    .get();
+  if (!session) return NextResponse.json({ error: "Session not found" }, { status: 404 });
+  return NextResponse.json(session, { headers: { "cache-control": "no-store" } });
+}
+
 export async function POST(request: NextRequest) {
   const body = (await request.json().catch(() => ({}))) as { sessionId?: string; name?: string };
   const sessionId = body.sessionId?.trim();

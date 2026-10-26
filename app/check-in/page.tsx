@@ -17,7 +17,7 @@ export default function CheckInPage() {
       setMessage("This check-in link is incomplete.");
       return;
     }
-    fetch(`/api/session?id=${encodeURIComponent(id)}`, { cache: "no-store" })
+    fetch(`/api/checkin?session=${encodeURIComponent(id)}`, { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) throw new Error();
         setSession(await response.json());
