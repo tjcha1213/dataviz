@@ -14,6 +14,37 @@ type Session = {
 
 const STORAGE_KEY = "classroom-attendance-session";
 
+const MEMES = [
+  {
+    src: "/data-visualization-meme.png",
+    alt: "A professor presents a confusing 3D pie chart while a student points to a clear bar chart",
+    setup: "When the 3D pie chart looks “impressive”…",
+    punchline: "…but a bar chart tells the story better.",
+    lesson: "Lesson: position and length are easier to compare than angles and area.",
+  },
+  {
+    src: "/data-visualization-meme-axis.png",
+    alt: "A presenter exaggerates a bar chart while a student uses a magnifying glass to reveal the small difference",
+    setup: "When the axis starts wherever the drama needs…",
+    punchline: "…zoom out before the chart fools you.",
+    lesson: "Lesson: bar charts usually need a zero baseline for honest comparisons.",
+  },
+  {
+    src: "/data-visualization-meme-correlation.png",
+    alt: "A data detective arrests an ice cream cone while a student identifies sunshine as a shared cause",
+    setup: "When two lines rise together…",
+    punchline: "…and correlation puts the ice cream in handcuffs.",
+    lesson: "Lesson: a shared trend does not prove that one variable caused the other.",
+  },
+  {
+    src: "/data-visualization-meme-clutter.png",
+    alt: "A presenter is tangled in chart lines while a student highlights one important trend",
+    setup: "When every data series demands the spotlight…",
+    punchline: "…highlight the one that answers the question.",
+    lesson: "Lesson: reduce clutter and guide attention with emphasis.",
+  },
+] as const;
+
 function todayKey() {
   return new Intl.DateTimeFormat("en-CA", {
     year: "numeric",
@@ -43,6 +74,7 @@ export default function AttendanceDashboard({ instructorName }: { instructorName
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyDetail, setHistoryDetail] = useState<Session | null>(null);
   const [deletingId, setDeletingId] = useState("");
+  const [memeIndex, setMemeIndex] = useState(0);
 
   const refreshSession = useCallback(async (id: string, quiet = false) => {
     try {
@@ -66,8 +98,11 @@ export default function AttendanceDashboard({ instructorName }: { instructorName
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        const parsed = JSON.parse(saved) as { id: string; date: string };
-        if (parsed.date === todayKey()) refreshSession(parsed.id);
+        const parsed = JSON.parse(saved) as { id: string; date: string; memeIndex?: number };
+        if (parsed.date === todayKey()) {
+          setMemeIndex(Number.isInteger(parsed.memeIndex) ? Math.abs(parsed.memeIndex!) % MEMES.length : 0);
+          refreshSession(parsed.id);
+        }
         else {
           localStorage.removeItem(STORAGE_KEY);
           setLoading(false);
@@ -111,7 +146,9 @@ export default function AttendanceDashboard({ instructorName }: { instructorName
       });
       if (!response.ok) throw new Error("Unable to start session");
       const data = (await response.json()) as Session;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: data.id, date: todayKey() }));
+      const firstMemeIndex = Math.floor(Math.random() * MEMES.length);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: data.id, date: todayKey(), memeIndex: firstMemeIndex }));
+      setMemeIndex(firstMemeIndex);
       setSession(data);
     } catch {
       setError("Could not start attendance. Please try again.");
@@ -133,7 +170,9 @@ export default function AttendanceDashboard({ instructorName }: { instructorName
       });
       if (!response.ok) throw new Error();
       const data = (await response.json()) as Session;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: data.id, date: todayKey() }));
+      const nextMemeIndex = (memeIndex + 1) % MEMES.length;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: data.id, date: todayKey(), memeIndex: nextMemeIndex }));
+      setMemeIndex(nextMemeIndex);
       setSession(data);
       setQrDataUrl("");
       setHistory([]);
@@ -239,6 +278,7 @@ export default function AttendanceDashboard({ instructorName }: { instructorName
     () => new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" }).format(now),
     [now]
   );
+  const activeMeme = MEMES[memeIndex];
 
   if (loading) return <main className="loading-screen">Preparing attendance…</main>;
 
@@ -293,11 +333,11 @@ export default function AttendanceDashboard({ instructorName }: { instructorName
             <p>Scan to sign in</p>
           </div>
           <figure className="meme-card">
-            <img src="/data-visualization-meme.png" alt="A professor presents a confusing 3D pie chart while a student points to a clear bar chart" />
+            <img key={activeMeme.src} src={activeMeme.src} alt={activeMeme.alt} />
             <figcaption>
-              <strong>When the 3D pie chart looks “impressive”…</strong>
-              <span>…but a bar chart tells the story better.</span>
-              <small>Lesson: position and length are easier to compare than angles and area.</small>
+              <strong>{activeMeme.setup}</strong>
+              <span>{activeMeme.punchline}</span>
+              <small>{activeMeme.lesson}</small>
             </figcaption>
           </figure>
         </div>
