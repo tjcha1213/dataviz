@@ -1,19 +1,5 @@
-# Classroom Attendance QR
+# Classroom Attendance
 
-A projector-ready QR code generator for classroom attendance. Paste the URL for an attendance form, generate the code, and present it full-screen for students to scan.
+A live classroom attendance display. An instructor starts a session, students scan the projected QR code and enter their names, and the attendance list updates automatically.
 
-**Live site:** <https://tjcha1213.github.io/dataviz/>
-
-## Run locally
-
-Serve the `dist` directory with any static web server, for example:
-
-```bash
-python3 -m http.server 4173 --directory dist
-```
-
-Then open <http://localhost:4173>.
-
-## Privacy
-
-The attendance URL is encoded in the browser. This project does not submit or store attendance data; the destination form handles sign-in.
+The source is maintained in `tjcha1213/dataviz`. Production uses a hosted Worker and D1 database because GitHub Pages cannot accept or synchronize student check-ins.
