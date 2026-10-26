@@ -172,6 +172,7 @@ input[type='color']::-webkit-color-swatch { border: 0; border-radius: 50%; }
 .primary-button { display: flex; width: 100%; min-height: 56px; align-items: center; justify-content: space-between; margin-top: 26px; padding: 0 21px; color: #fff; background: var(--deep); font-weight: 750; }
 .primary-button span:last-child { font-size: 24px; }
 .primary-button:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(23, 63, 59, 0.2); }
+.primary-button:disabled { cursor: wait; opacity: 0.72; }
 .primary-button:active, .secondary-button:active, .icon-button:active { transform: translateY(0); }
 
 .teacher-tip { display: flex; gap: 13px; margin: 18px 8px 0; color: var(--muted); font-size: 12px; line-height: 1.55; }

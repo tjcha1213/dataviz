@@ -10,6 +10,8 @@ const displayTitle = document.querySelector('#display-title');
 const shortUrl = document.querySelector('#short-url');
 const qrStage = document.querySelector('#qr-stage');
 const qrCodeElement = document.querySelector('#qr-code');
+const generateButton = document.querySelector('#generate-button');
+const generateLabel = document.querySelector('#generate-label');
 const presentButton = document.querySelector('#present-button');
 const downloadButton = document.querySelector('#download-button');
 
@@ -61,6 +63,9 @@ async function generateCode(event) {
 
   urlInput.value = url;
   updateDisplay();
+  generateButton.disabled = true;
+  generateLabel.textContent = 'Generating…';
+  await new Promise(requestAnimationFrame);
 
   try {
     qrCodeElement.replaceChildren();
@@ -85,6 +90,9 @@ async function generateCode(event) {
     setMessage('QR code ready. Scan it once before presenting.');
   } catch {
     setMessage('That link is too long to encode. Try a shorter share link.', true);
+  } finally {
+    generateButton.disabled = false;
+    generateLabel.textContent = 'Generate QR code';
   }
 }
 
@@ -114,6 +122,7 @@ function downloadCode() {
   link.click();
 }
 
+generateButton.addEventListener('click', generateCode);
 form.addEventListener('submit', generateCode);
 titleInput.addEventListener('input', updateDisplay);
 colorInput.addEventListener('input', updateDisplay);
