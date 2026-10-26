@@ -56,7 +56,7 @@ button:disabled { cursor: wait; opacity: .65; }
 .class-header { display: flex; justify-content: space-between; gap: 40px; align-items: flex-end; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
 .class-header h1 { margin: 0; font-size: clamp(38px, 6vw, 78px); line-height: .95; letter-spacing: -.06em; }
 .date-time { display: flex; flex-direction: column; align-items: flex-end; flex: 0 0 auto; }
-.date-time strong { font-size: clamp(15px, 1.6vw, 22px); }
+.date-time strong { font-size: clamp(28px, 3.5vw, 52px); line-height: 1; letter-spacing: -.035em; }
 .date-time span { margin-top: 5px; color: var(--accent); font-size: clamp(28px, 3vw, 46px); font-weight: 800; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
 .header-tools { display: flex; align-items: flex-end; gap: 22px; }
 .session-actions { display: flex; gap: 8px; }
