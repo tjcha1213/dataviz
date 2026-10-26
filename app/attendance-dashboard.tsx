@@ -284,11 +284,23 @@ export default function AttendanceDashboard({ instructorName }: { instructorName
         </div>
       </header>
 
-      <section className="qr-section" aria-label="Student check-in QR code">
-        <div className="qr-frame">
-          {qrDataUrl ? <img src={qrDataUrl} alt="QR code for student attendance check-in" /> : <div className="qr-loading">Generating QR…</div>}
+      <section className="qr-section" aria-label="Student check-in and data visualization tip">
+        <div className="visual-grid">
+          <div className="visual-item">
+            <div className="qr-frame">
+              {qrDataUrl ? <img src={qrDataUrl} alt="QR code for student attendance check-in" /> : <div className="qr-loading">Generating QR…</div>}
+            </div>
+            <p>Scan to sign in</p>
+          </div>
+          <figure className="meme-card">
+            <img src="/data-visualization-meme.png" alt="A professor presents a confusing 3D pie chart while a student points to a clear bar chart" />
+            <figcaption>
+              <strong>When the 3D pie chart looks “impressive”…</strong>
+              <span>…but a bar chart tells the story better.</span>
+              <small>Lesson: position and length are easier to compare than angles and area.</small>
+            </figcaption>
+          </figure>
         </div>
-        <p>Scan to sign in</p>
       </section>
 
       <section className="roster" aria-labelledby="roster-title">
