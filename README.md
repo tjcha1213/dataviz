@@ -2,6 +2,8 @@
 
 A projector-ready QR code generator for classroom attendance. Paste the URL for an attendance form, generate the code, and present it full-screen for students to scan.
 
+**Live site:** <https://tjcha1213.github.io/dataviz/>
+
 ## Run locally
 
 Serve the `dist` directory with any static web server, for example:
@@ -15,4 +17,3 @@ Then open <http://localhost:4173>.
 ## Privacy
 
 The attendance URL is encoded in the browser. This project does not submit or store attendance data; the destination form handles sign-in.
-
