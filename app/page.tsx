@@ -107,6 +107,42 @@ export default function AttendanceDisplay() {
     }
   }
 
+  function downloadAttendance() {
+    if (!session || session.checkins.length === 0) return;
+
+    const csvCell = (value: string) => {
+      let safe = value.replace(/[\r\n]+/g, " ").trim();
+      if (/^[=+\-@]/.test(safe)) safe = `'${safe}`;
+      return `"${safe.replace(/"/g, '""')}"`;
+    };
+
+    const rows = [
+      ["Course", session.course],
+      ["Class date", session.classDate],
+      ["Exported at", new Date().toLocaleString()],
+      [],
+      ["Student name", "Check-in time"],
+      ...session.checkins.map((checkin) => [
+        checkin.name,
+        new Date(checkin.checkedInAt).toLocaleString(),
+      ]),
+    ];
+    const csv = `\uFEFF${rows.map((row) => row.map(csvCell).join(",")).join("\r\n")}`;
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const courseSlug = session.course
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") || "class";
+    link.href = url;
+    link.download = `${courseSlug}-attendance-${session.classDate}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
   const formattedDate = useMemo(
     () => new Intl.DateTimeFormat(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(now),
     [now.toDateString()]
@@ -164,7 +200,18 @@ export default function AttendanceDisplay() {
       <section className="roster" aria-labelledby="roster-title">
         <div className="roster-heading">
           <h2 id="roster-title">Signed in</h2>
-          <span>{session.checkins.length} {session.checkins.length === 1 ? "student" : "students"}</span>
+          <div className="roster-actions">
+            <span>{session.checkins.length} {session.checkins.length === 1 ? "student" : "students"}</span>
+            <button
+              className="download-button"
+              type="button"
+              onClick={downloadAttendance}
+              disabled={session.checkins.length === 0}
+              title={session.checkins.length === 0 ? "No attendance to download yet" : "Download attendance as CSV"}
+            >
+              <span aria-hidden="true">↓</span> Download CSV
+            </button>
+          </div>
         </div>
         {session.checkins.length ? (
           <ol className="name-list">
