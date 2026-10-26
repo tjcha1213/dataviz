@@ -42,6 +42,7 @@ export default function AttendanceDashboard({ instructorName }: { instructorName
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyDetail, setHistoryDetail] = useState<Session | null>(null);
+  const [deletingId, setDeletingId] = useState("");
 
   const refreshSession = useCallback(async (id: string, quiet = false) => {
     try {
@@ -168,6 +169,29 @@ export default function AttendanceDashboard({ instructorName }: { instructorName
       setError("Could not load that attendance session.");
     } finally {
       setHistoryLoading(false);
+    }
+  }
+
+  async function deleteHistorySession(target: HistoryItem | Session) {
+    const attendanceCount = "attendanceCount" in target ? target.attendanceCount : target.checkins.length;
+    const warning = attendanceCount === 1 ? "1 attendance record" : `${attendanceCount} attendance records`;
+    if (!window.confirm(`Permanently delete ${target.course} from ${new Date(target.createdAt).toLocaleString()} and ${warning}? This cannot be undone.`)) return;
+
+    setDeletingId(target.id);
+    setError("");
+    try {
+      const response = await fetch(`/api/session?id=${encodeURIComponent(target.id)}`, { method: "DELETE" });
+      if (!response.ok) throw new Error();
+      setHistory((items) => items.filter((item) => item.id !== target.id));
+      if (historyDetail?.id === target.id) setHistoryDetail(null);
+      if (session?.id === target.id) {
+        localStorage.removeItem(STORAGE_KEY);
+        setSession(null);
+      }
+    } catch {
+      setError("Could not delete that attendance session. Please try again.");
+    } finally {
+      setDeletingId("");
     }
   }
 
@@ -321,7 +345,10 @@ export default function AttendanceDashboard({ instructorName }: { instructorName
                     <h3>{historyDetail.course}</h3>
                     <p>{new Date(historyDetail.createdAt).toLocaleString()}</p>
                   </div>
-                  <button className="download-button" type="button" onClick={() => downloadAttendance(historyDetail)} disabled={historyDetail.checkins.length === 0}>↓ Download CSV</button>
+                  <div className="history-detail-actions">
+                    <button className="download-button" type="button" onClick={() => downloadAttendance(historyDetail)} disabled={historyDetail.checkins.length === 0}>↓ Download CSV</button>
+                    <button className="delete-button" type="button" onClick={() => deleteHistorySession(historyDetail)} disabled={deletingId === historyDetail.id}>{deletingId === historyDetail.id ? "Deleting…" : "Delete session"}</button>
+                  </div>
                 </div>
                 {historyDetail.checkins.length ? (
                   <ol className="history-names">
@@ -336,10 +363,13 @@ export default function AttendanceDashboard({ instructorName }: { instructorName
             ) : history.length ? (
               <div className="history-list">
                 {history.map((item) => (
-                  <button key={item.id} type="button" onClick={() => viewHistorySession(item.id)}>
-                    <span><strong>{item.course}</strong><small>{new Date(item.createdAt).toLocaleString()}</small></span>
-                    <b>{item.attendanceCount} {item.attendanceCount === 1 ? "student" : "students"} →</b>
-                  </button>
+                  <div className="history-row" key={item.id}>
+                    <button className="history-view-button" type="button" onClick={() => viewHistorySession(item.id)}>
+                      <span><strong>{item.course}</strong><small>{new Date(item.createdAt).toLocaleString()}</small></span>
+                      <b>{item.attendanceCount} {item.attendanceCount === 1 ? "student" : "students"} →</b>
+                    </button>
+                    <button className="history-delete-button" type="button" onClick={() => deleteHistorySession(item)} disabled={deletingId === item.id} aria-label={`Delete ${item.course} session from ${new Date(item.createdAt).toLocaleString()}`} title="Delete session">{deletingId === item.id ? "…" : "Delete"}</button>
+                  </div>
                 ))}
               </div>
             ) : <p className="history-status">No previous sessions yet.</p>}

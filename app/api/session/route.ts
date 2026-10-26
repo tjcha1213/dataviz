@@ -59,3 +59,23 @@ export async function POST(request: NextRequest) {
   await getDb().insert(sessions).values(session);
   return NextResponse.json({ ...session, checkins: [] }, { status: 201 });
 }
+
+export async function DELETE(request: NextRequest) {
+  const user = await getChatGPTUser();
+  if (!user) return NextResponse.json({ error: "Sign in required" }, { status: 401 });
+
+  const id = request.nextUrl.searchParams.get("id")?.trim();
+  if (!id) return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
+
+  const db = getDb();
+  const session = await db.select({ id: sessions.id, ownerId: sessions.ownerId })
+    .from(sessions)
+    .where(eq(sessions.id, id))
+    .get();
+  if (!session) return NextResponse.json({ error: "Session not found" }, { status: 404 });
+  if (session.ownerId !== user.userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  await db.delete(checkins).where(eq(checkins.sessionId, id));
+  await db.delete(sessions).where(eq(sessions.id, id));
+  return NextResponse.json({ deleted: true, id });
+}
